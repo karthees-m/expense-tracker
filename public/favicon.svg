@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#39B8FF" />
+      <stop offset="100%" stop-color="#4318FF" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with rounded corners -->
+  <rect width="100" height="100" rx="24" fill="url(#bgGrad)" />
+  
+  <!-- Credit Card Outline -->
+  <rect x="20" y="30" width="60" height="40" rx="6" fill="none" stroke="#ffffff" stroke-width="6" />
+  
+  <!-- Magnetic Strip -->
+  <line x1="20" y1="45" x2="80" y2="45" stroke="#ffffff" stroke-width="6" />
+  
+  <!-- Chip Detail -->
+  <circle cx="35" cy="58" r="4" fill="#ffffff" />
+</svg>
