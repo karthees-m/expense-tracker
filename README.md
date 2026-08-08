@@ -1,36 +1,41 @@
-# 💳 ExpenseTracker Pro
+# 💰 Expense Tracker App
 
-An enterprise-grade, responsive personal finance and expense management platform designed to track expenditures, manage category-specific budgets, monitor daily cash flows via an interactive calendar, and handle peer-to-peer lending ledgers.
+A modern, secure, and responsive web application built to track daily expenses and income, powered by React, Vite, and Firebase.
 
----
+## ✨ Features
 
-## 🚀 Key Features
+- **Secure Authentication:** Support for Google Sign-In and Email/Password authentication via Firebase Auth.
+- **Expense & Income Management:** Easily add, categorize, view, and delete transaction records.
+- **Real-time Database:** Fast, secure, and persistent data storage using Firebase Firestore.
+- **Responsive UI:** Clean and modern user interface optimized for both mobile and desktop viewports.
 
-* **Real-Time Financial Dashboard**: Instant visibility into total spending, net balances, and categorical distribution.
-* **Advanced Transaction Ledger**: Multi-parameter filtering (by title, category, payment mode, and date range) coupled with flexible sorting and lightning-fast search.
-* **Audit & Export Capabilities**: Generate production-ready A4 PDF financial statements or export raw transaction data to CSV spreadsheets.
-* **Interactive Expense Calendar**: Visual calendar grid providing daily expenditure summaries with modal drill-downs for granular transaction reviews.
-* **Budget & Category Management**: Dynamic custom categories with emoji descriptors and hard-limit budget tracking.
-* **Peer-to-Peer Ledger (Friends)**: Dedicated tracking for split expenses and money lent to peers.
-* **Adaptive Glassmorphism UI**: Seamless dark and light mode toggle engineered with a modern design system.
-* **Secure Cloud Architecture**: Powered by Firebase Authentication and Cloud Firestore for real-time data persistence and security.
+## 🛠️ Tech Stack
 
----
+- **Frontend:** React, Vite, JavaScript, CSS / Tailwind CSS
+- **Backend & Database:** Firebase Authentication & Cloud Firestore
+- **Deployment:** Netlify
 
-## 🛠️ Technology Stack
+## 🚀 Getting Started (Local Development)
 
-* **Frontend Framework**: React.js (Powered by Vite for high-performance builds)
-* **Styling & Design**: Vanilla CSS (Custom Design System, Glassmorphism, Fully Responsive Flexbox/Grid layouts)
-* **Database & Auth**: Firebase Firestore & Firebase Authentication
-* **Hosting & Deployment**: Netlify
+To run this project locally on your machine, follow these simple steps:
 
----
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/karthees-m/expense-tracker.git](https://github.com/karthees-m/expense-tracker.git)
+   cd expense-tracker
 
-## ⚙️ Getting Started Locally
+   Install dependencies:
+   npm install
 
-To set up and run this project locally, adhere to the instructions below:
 
-### 1. Clone the Repository
+2. **Create a .env file:**
+   
+Create a .env file in the root directory of your project and add your Firebase configuration credentials:
+
 ```bash
-git clone [https://github.com/your-username/expense-tracker.git](https://github.com/your-username/expense-tracker.git)
-cd expense-tracker
+  VITE_FIREBASE_API_KEY=your_api_key_here
+  VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain_here
+  VITE_FIREBASE_PROJECT_ID=your_project_id_here
+  VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket_here
+  VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id_here
+  VITE_FIREBASE_APP_ID=your_app_id_here
