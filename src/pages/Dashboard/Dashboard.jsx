@@ -11,7 +11,34 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
+import * as Icons from "lucide-react";
 import "./Dashboard.css";
+
+const renderIcon = (iconName, size = 20) => {
+  const IconCmp = Icons[iconName] || Icons.Tag;
+  return <IconCmp size={size} />;
+};
+
+const CustomPieTooltip = ({ active, payload, currency }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="custom-pie-tooltip">
+        <div className="tooltip-cat">
+          <span className="dot" style={{ backgroundColor: data.color }}></span>
+          {data.name}
+        </div>
+        <div className="tooltip-val">
+          {currency}
+          {Number(data.value).toLocaleString("en-IN", {
+            minimumFractionDigits: 0,
+          })}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function Dashboard({
   expenses,
@@ -24,45 +51,21 @@ export default function Dashboard({
 }) {
   const [timeRangeOverview, setTimeRangeOverview] = useState("30D");
   const [showOverviewDropdown, setShowOverviewDropdown] = useState(false);
-
   const [timeRangeCategory, setTimeRangeCategory] = useState("30D");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   const totalExpense = expenses.reduce((acc, curr) => acc + curr.amount, 0);
-
   const todayStr = new Date().toISOString().split("T")[0];
   const todayExpenses = expenses.filter((e) => e.date === todayStr);
   const todayTotal = todayExpenses.reduce((acc, curr) => acc + curr.amount, 0);
 
-  const todayDisplayDate = new Date().toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-
-  const catColors = {
-    "Food & Dining": "#4318FF",
-    Transport: "#39B8FF",
-    Shopping: "#05CD99",
-    "Bills & Utilities": "#FFB547",
-    Entertainment: "#EE5D50",
-    "Lent to Friend": "#868CFF",
-    Others: "#A3AED0",
-  };
-
   const filteredCategoryExpenses = expenses.filter((item) => {
     if (!item.date) return false;
-    const itemDate = new Date(item.date);
-    const today = new Date();
-    const diffTime = today - itemDate;
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
-
+    const diffDays = (new Date() - new Date(item.date)) / (1000 * 60 * 60 * 24);
     if (timeRangeCategory === "7D") return diffDays >= 0 && diffDays <= 7;
     if (timeRangeCategory === "30D") return diffDays >= 0 && diffDays <= 30;
     if (timeRangeCategory === "3M") return diffDays >= 0 && diffDays <= 90;
     if (timeRangeCategory === "1Y") return diffDays >= 0 && diffDays <= 365;
-    if (timeRangeCategory === "All") return true;
     return true;
   });
 
@@ -76,31 +79,25 @@ export default function Dashboard({
       const val = filteredCategoryExpenses
         .filter((e) => e.category === cat.name)
         .reduce((a, b) => a + b.amount, 0);
-      const pct =
-        totalCategoryExpense > 0
-          ? ((val / totalCategoryExpense) * 100).toFixed(1)
-          : 0;
       return {
         name: cat.name,
         value: val,
-        percent: pct,
-        color: cat.color || catColors[cat.name] || "#4318FF",
+        percent:
+          totalCategoryExpense > 0
+            ? ((val / totalCategoryExpense) * 100).toFixed(1)
+            : 0,
+        color: cat.color || "#4318FF",
       };
     })
     .filter((c) => c.value > 0);
 
   const filteredOverviewExpenses = expenses.filter((item) => {
     if (!item.date) return false;
-    const itemDate = new Date(item.date);
-    const today = new Date();
-    const diffTime = today - itemDate;
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
-
+    const diffDays = (new Date() - new Date(item.date)) / (1000 * 60 * 60 * 24);
     if (timeRangeOverview === "7D") return diffDays >= 0 && diffDays <= 7;
     if (timeRangeOverview === "30D") return diffDays >= 0 && diffDays <= 30;
     if (timeRangeOverview === "3M") return diffDays >= 0 && diffDays <= 90;
     if (timeRangeOverview === "1Y") return diffDays >= 0 && diffDays <= 365;
-    if (timeRangeOverview === "All") return true;
     return true;
   });
 
@@ -113,11 +110,10 @@ export default function Dashboard({
   const trendData = Object.keys(trendMap)
     .map((k) => ({ date: k, amount: trendMap[k] }))
     .sort((a, b) => new Date(a.date) - new Date(b.date));
-
   const getCatDetails = (catName) => {
     const found = categories.find((c) => c.name === catName);
     return {
-      icon: found ? found.icon : "🏷️",
+      icon: found ? found.icon : "Tag",
       color: found ? found.color : "#4318FF",
     };
   };
@@ -132,89 +128,88 @@ export default function Dashboard({
 
   return (
     <div className="page-wrapper">
-      {/* Top Header */}
       <div className="top-nav">
-        <div className="top-nav-left">
-          <h2>Welcome back, {userName}! 👋</h2>
-          <p>Track your expenses and manage your money better</p>
+        <div className="app-header-left">
+          <p className="greeting-sub">Good Morning,</p>
+          <h2 className="greeting-title">{userName}</h2>
         </div>
-        <div className="top-nav-right">
-          <div className="date-pill">📅 {todayDisplayDate}</div>
+        <div className="app-header-right">
           <button
             className="btn-primary-add"
             onClick={() => setShowModal(true)}
           >
-            + Add Expense
+            <Icons.Plus size={20} /> Add Expense
           </button>
         </div>
       </div>
 
-      {/* Top 3 Summary Cards */}
       <div className="top-cards-grid">
-        <div className="summary-card">
-          <div className="card-top-row">
-            <div className="stat-icon-circle blue">💳</div>
-            <div>
-              <p className="card-label">Total Expense</p>
-              <h3 className="card-val">
-                {currency}{" "}
-                {totalExpense.toLocaleString("en-IN", {
-                  minimumFractionDigits: 2,
-                })}
-              </h3>
-            </div>
+        <div className="summary-card compact">
+          <div className="card-top-row-compact">
+            <span className="card-label">Total Expense</span>
+            <Icons.CreditCard size={18} color="#4318FF" />
           </div>
-          <div className="trend-row red">↓ 5.7% from last month</div>
+          <h3 className="card-val">
+            {currency}
+            {totalExpense.toLocaleString("en-IN", { minimumFractionDigits: 0 })}
+          </h3>
         </div>
 
-        <div className="summary-card">
-          <div className="card-top-row">
-            <div className="stat-icon-circle cyan">⏱</div>
-            <div>
-              <p className="card-label">Today Expense</p>
-              <h3 className="card-val">
-                {currency}{" "}
-                {todayTotal.toLocaleString("en-IN", {
-                  minimumFractionDigits: 2,
-                })}
-              </h3>
-            </div>
+        <div className="summary-card compact">
+          <div className="card-top-row-compact">
+            <span className="card-label">Today</span>
+            <Icons.Clock size={18} color="#39B8FF" />
           </div>
-          <div className="trend-row green">↑ 12.4% from yesterday</div>
+          <h3 className="card-val">
+            {currency}
+            {todayTotal.toLocaleString("en-IN", { minimumFractionDigits: 0 })}
+          </h3>
         </div>
 
-        <div className="summary-card">
-          <div className="card-top-row">
-            <div className="stat-icon-circle green">📊</div>
-            <div>
-              <p className="card-label">This Month Expense</p>
-              <h3 className="card-val">
-                {currency}{" "}
-                {totalExpense.toLocaleString("en-IN", {
-                  minimumFractionDigits: 2,
-                })}
-              </h3>
-            </div>
+        <div className="summary-card compact">
+          <div className="card-top-row-compact">
+            <span className="card-label">This Month</span>
+            <Icons.Calendar size={18} color="#05CD99" />
           </div>
-          <div className="trend-row red">↓ 5.7% from last month</div>
+          <h3 className="card-val">
+            {currency}
+            {totalExpense.toLocaleString("en-IN", { minimumFractionDigits: 0 })}
+          </h3>
+        </div>
+
+        <div className="summary-card compact">
+          <div className="card-top-row-compact">
+            <span className="card-label">Transactions</span>
+            <Icons.Activity size={18} color="#FFB547" />
+          </div>
+          <h3 className="card-val">{expenses.length}</h3>
         </div>
       </div>
 
       <div className="middle-charts-grid">
-        {/* 1. Expense Overview Chart */}
         <div className="content-card">
-          <div className="card-heading-bar">
-            <div>
-              <h3>Expense Overview</h3>
-              <p className="chart-sub-label">Spending trajectory</p>
+          <div className="card-heading-bar-chart">
+            <div className="chart-header-left">
+              <p className="chart-sub-label-top">EXPENSE OVERVIEW</p>
+              <div className="chart-val-row">
+                <h3>
+                  {totalExpense.toLocaleString("en-IN", {
+                    minimumFractionDigits: 0,
+                  })}
+                </h3>
+                <span className="trend-up">
+                  <Icons.Triangle fill="currentColor" size={14} />
+                </span>
+              </div>
             </div>
+
             <div className="chart-filter-dropdown-container">
               <button
                 className="chart-filter-trigger"
                 onClick={() => setShowOverviewDropdown(!showOverviewDropdown)}
               >
                 <span>{timeRangeLabels[timeRangeOverview]}</span>
-                <span className="arrow">▾</span>
+                <Icons.ChevronDown size={14} className="arrow" />
               </button>
               {showOverviewDropdown && (
                 <div className="chart-filter-menu">
@@ -242,55 +237,62 @@ export default function Dashboard({
                 margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
               >
                 <defs>
-                  <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#4318FF" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#4318FF" stopOpacity={0.0} />
+                  <linearGradient id="purpleArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#a855f7" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#a855f7" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
-                  stroke="rgba(163, 174, 208, 0.15)"
+                  stroke="var(--border-light)"
                 />
                 <XAxis
                   dataKey="date"
-                  stroke="#a3aed0"
+                  stroke="var(--text-muted)"
                   tickLine={false}
                   axisLine={false}
-                  dy={8}
+                  dy={10}
                   fontSize={11}
                 />
                 <YAxis
-                  stroke="#a3aed0"
+                  stroke="var(--text-muted)"
                   tickLine={false}
                   axisLine={false}
+                  dx={-10}
                   fontSize={11}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "var(--bg-card, #1e293b)",
-                    borderColor: "rgba(255, 255, 255, 0.1)",
+                    backgroundColor: "var(--bg-card)",
                     borderRadius: "12px",
-                    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.25)",
-                    color: "var(--text-dark, #fff)",
+                    border: "1px solid var(--border-light)",
+                    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)",
+                    color: "var(--text-dark)",
                     padding: "10px 14px",
                   }}
-                  itemStyle={{ color: "#4318FF", fontWeight: "700" }}
+                  itemStyle={{ color: "#a855f7", fontWeight: "700" }}
                   formatter={(value) => [
-                    `${currency} ${value.toFixed(2)}`,
+                    `${currency} ${value.toFixed(0)}`,
                     "Amount",
                   ]}
                 />
                 <Area
-                  type="monotone"
+                  type="linear"
                   dataKey="amount"
-                  stroke="#4318FF"
+                  stroke="#a855f7"
                   strokeWidth={3}
                   fillOpacity={1}
-                  fill="url(#areaGrad)"
+                  fill="url(#purpleArea)"
+                  dot={{
+                    r: 5,
+                    fill: "#a855f7",
+                    stroke: "#fff",
+                    strokeWidth: 1.5,
+                  }}
                   activeDot={{
-                    r: 6,
-                    fill: "#4318FF",
+                    r: 7,
+                    fill: "#a855f7",
                     stroke: "#fff",
                     strokeWidth: 2,
                   }}
@@ -301,18 +303,17 @@ export default function Dashboard({
         </div>
 
         <div className="content-card">
-          <div className="card-heading-bar">
-            <div>
-              <h3>Expenses by Category</h3>
-              <p className="chart-sub-label">Distribution share</p>
-            </div>
+          <div className="card-heading-bar" style={{ marginBottom: "20px" }}>
+            <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: "700" }}>
+              Categories
+            </h3>
             <div className="chart-filter-dropdown-container">
               <button
                 className="chart-filter-trigger"
                 onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
               >
                 <span>{timeRangeLabels[timeRangeCategory]}</span>
-                <span className="arrow">▾</span>
+                <Icons.ChevronDown size={14} className="arrow" />
               </button>
               {showCategoryDropdown && (
                 <div className="chart-filter-menu">
@@ -332,41 +333,9 @@ export default function Dashboard({
               )}
             </div>
           </div>
+
           <div className="donut-layout">
             <div className="donut-chart-box">
-              <ResponsiveContainer width={150} height={150}>
-                <PieChart>
-                  <Pie
-                    data={categoryTotals}
-                    innerRadius={50}
-                    outerRadius={72}
-                    paddingAngle={3}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {categoryTotals.map((entry) => (
-                      <Cell
-                        key={entry.name}
-                        fill={entry.color}
-                        style={{
-                          filter: "drop-shadow(0px 3px 6px rgba(0,0,0,0.1))",
-                          cursor: "pointer",
-                        }}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--bg-card, #1e293b)",
-                      borderRadius: "10px",
-                      border: "none",
-                      color: "#fff",
-                      boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-                    }}
-                    formatter={(value) => [`${currency} ${value.toFixed(2)}`]}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
               <div className="donut-center-info">
                 <h4>
                   {currency}
@@ -374,8 +343,40 @@ export default function Dashboard({
                     ? (totalCategoryExpense / 1000).toFixed(0) + "k"
                     : totalCategoryExpense.toFixed(0)}
                 </h4>
-                <p>Total Spent</p>
+                <p>Total</p>
               </div>
+
+              <ResponsiveContainer width={170} height={170}>
+                <PieChart>
+                  <Pie
+                    data={categoryTotals}
+                    innerRadius={55}
+                    outerRadius={78}
+                    paddingAngle={4}
+                    dataKey="value"
+                    stroke="var(--bg-card)"
+                    strokeWidth={3}
+                  >
+                    {categoryTotals.map((entry) => (
+                      <Cell
+                        key={entry.name}
+                        fill={entry.color}
+                        style={{
+                          filter: "drop-shadow(0px 4px 8px rgba(0,0,0,0.15))",
+                          cursor: "pointer",
+                          transition: "all 0.3s ease",
+                        }}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    content={<CustomPieTooltip currency={currency} />}
+                    cursor={{ fill: "transparent" }}
+                    offset={30}
+                    isAnimationActive={true}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
 
             <div className="category-legend-list">
@@ -392,7 +393,7 @@ export default function Dashboard({
                     <strong>
                       {currency}
                       {cat.value.toFixed(0)}
-                    </strong>
+                    </strong>{" "}
                     <span>({cat.percent}%)</span>
                   </div>
                 </div>
@@ -410,7 +411,7 @@ export default function Dashboard({
               className="view-all-link"
               onClick={() => setActiveTab("Transactions")}
             >
-              View All
+              See All
             </button>
           </div>
           <div className="compact-tx-list">
@@ -426,7 +427,7 @@ export default function Dashboard({
                         color: details.color,
                       }}
                     >
-                      {details.icon}
+                      {renderIcon(details.icon, 20)}
                     </div>
                     <div>
                       <h4>{item.title}</h4>
@@ -437,7 +438,7 @@ export default function Dashboard({
                   </div>
                   <div className="tx-price">
                     - {currency}
-                    {item.amount.toFixed(2)}
+                    {item.amount.toFixed(0)}
                   </div>
                 </div>
               );
@@ -451,10 +452,7 @@ export default function Dashboard({
         <div className="content-card">
           <div className="card-heading-bar">
             <div>
-              <h3>Today Expense Breakdown</h3>
-              <p className="sub-price">
-                {currency} {todayTotal.toFixed(2)} Total
-              </p>
+              <h3>Today Breakdown</h3>
             </div>
           </div>
           <div className="compact-tx-list">
@@ -470,7 +468,7 @@ export default function Dashboard({
                         color: details.color,
                       }}
                     >
-                      {details.icon}
+                      {renderIcon(details.icon, 20)}
                     </div>
                     <div>
                       <h4>{item.title}</h4>
@@ -479,7 +477,7 @@ export default function Dashboard({
                   </div>
                   <div className="tx-price">
                     {currency}
-                    {item.amount.toFixed(2)}
+                    {item.amount.toFixed(0)}
                   </div>
                 </div>
               );
@@ -487,31 +485,6 @@ export default function Dashboard({
             {todayExpenses.length === 0 && (
               <p className="empty-txt">No expenses spent today.</p>
             )}
-          </div>
-        </div>
-
-        <div className="content-card">
-          <div className="card-heading-bar">
-            <h3>{timeRangeLabels[timeRangeCategory]} Expenses by Category</h3>
-          </div>
-          <div className="progress-bars-column">
-            {categoryTotals.map((cat) => (
-              <div className="cat-bar-item" key={cat.name}>
-                <div className="bar-labels">
-                  <span>{cat.name}</span>
-                  <strong>
-                    {currency}
-                    {cat.value.toFixed(2)} ({cat.percent}%)
-                  </strong>
-                </div>
-                <div className="bar-track">
-                  <div
-                    className="bar-fill"
-                    style={{ width: `${cat.percent}%`, background: cat.color }}
-                  ></div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </div>
