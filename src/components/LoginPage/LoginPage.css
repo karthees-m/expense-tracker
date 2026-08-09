@@ -9,7 +9,6 @@
   overflow: hidden;
 }
 
-/* Background Bubbles */
 .bubble {
   position: absolute;
   border-radius: 50%;
@@ -51,7 +50,6 @@
   z-index: 1;
 }
 
-/* LEFT SIDE: Form */
 .login-form-side {
   padding: 40px;
   display: flex;
@@ -194,7 +192,6 @@
   font-size: 0.85rem;
 }
 
-/* RIGHT SIDE: Visual Guidance */
 .login-visual-side {
   background: linear-gradient(135deg, #4318ff, #6366f1);
   display: flex;
@@ -268,7 +265,6 @@
   line-height: 1.3;
 }
 
-/* --- MOBILE RESPONSIVE OPTIMIZATION --- */
 @media (max-width: 768px) {
   .login-page {
     padding: 12px;
