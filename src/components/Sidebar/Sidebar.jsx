@@ -1,30 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { auth } from "../../firebase";
+import * as Icons from "lucide-react";
 import "./Sidebar.css";
 
 export default function Sidebar({ activeTab, setActiveTab, handleLogout }) {
   const user = auth.currentUser;
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); // 👈 Logout confirm popup state
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 768) {
-        setCollapsed(false);
-      }
+      if (window.innerWidth <= 768) setCollapsed(false);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const menuItems = [
-    { name: "Dashboard", icon: "📊" },
-    { name: "Transactions", icon: "💸" },
-    { name: "Categories", icon: "🏷️" },
-    { name: "Budgets", icon: "🎯" },
-    { name: "Calendar", icon: "📅" },
-    { name: "Settings", icon: "⚙️" },
+    { name: "Dashboard", icon: "LayoutDashboard" },
+    { name: "Transactions", icon: "ArrowRightLeft" },
+    { name: "Categories", icon: "Tags" },
+    { name: "Budgets", icon: "Target" },
+    { name: "Calendar", icon: "CalendarDays" },
+    { name: "Settings", icon: "Settings" },
   ];
 
   const handleTabClick = (tabName) => {
@@ -40,7 +39,7 @@ export default function Sidebar({ activeTab, setActiveTab, handleLogout }) {
           onClick={() => setMobileOpen(true)}
           title="Open Menu"
         >
-          ☰
+          <Icons.Menu size={24} />
         </button>
       )}
 
@@ -50,6 +49,7 @@ export default function Sidebar({ activeTab, setActiveTab, handleLogout }) {
           onClick={() => setMobileOpen(false)}
         ></div>
       )}
+
       <aside
         className={`sidebar ${collapsed ? "collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}
       >
@@ -59,32 +59,43 @@ export default function Sidebar({ activeTab, setActiveTab, handleLogout }) {
           <button
             className="menu-toggle-btn desktop-toggle"
             onClick={() => setCollapsed(!collapsed)}
-            title="Toggle Menu"
+            title={collapsed ? "Expand Menu" : "Collapse Menu"}
           >
-            ☰
+            {collapsed ? (
+              <Icons.Menu size={20} />
+            ) : (
+              <Icons.ChevronLeft size={22} />
+            )}
           </button>
-
           <button
             className="menu-toggle-btn mobile-close-btn"
             onClick={() => setMobileOpen(false)}
             title="Close Menu"
           >
-            ✕
+            <Icons.X size={20} />
           </button>
         </div>
 
         <ul className="sidebar-menu">
-          {menuItems.map((item) => (
-            <li
-              key={item.name}
-              className={`sidebar-item ${activeTab === item.name ? "active" : ""}`}
-              onClick={() => handleTabClick(item.name)}
-              title={collapsed && window.innerWidth > 768 ? item.name : ""}
-            >
-              <span className="item-icon">{item.icon}</span>
-              <span className="item-text">{item.name}</span>
-            </li>
-          ))}
+          {menuItems.map((item) => {
+            const IconCmp = Icons[item.icon];
+            return (
+              <li
+                key={item.name}
+                className={`sidebar-item ${activeTab === item.name ? "active" : ""}`}
+                onClick={() => handleTabClick(item.name)}
+                title={collapsed && window.innerWidth > 768 ? item.name : ""}
+              >
+                <span
+                  className="item-icon"
+                  style={{ display: "flex", alignItems: "center" }}
+                >
+                  <IconCmp size={20} />
+                </span>
+                <span className="item-text">{item.name}</span>
+              </li>
+            );
+          })}
         </ul>
 
         <div className="sidebar-footer">
@@ -97,7 +108,9 @@ export default function Sidebar({ activeTab, setActiveTab, handleLogout }) {
                   className="user-avatar"
                 />
               ) : (
-                <div className="user-avatar-placeholder">👤</div>
+                <div className="user-avatar-placeholder">
+                  <Icons.User size={20} />
+                </div>
               )}
               <div className="user-info">
                 <h4 className="user-name">{user.displayName || "User"}</h4>
@@ -107,33 +120,19 @@ export default function Sidebar({ activeTab, setActiveTab, handleLogout }) {
           )}
           <button
             className="sidebar-logout-btn"
-            onClick={() => setShowLogoutConfirm(true)} 
+            onClick={() => setShowLogoutConfirm(true)}
             title="Logout"
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ minWidth: "20px" }}
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
+            <Icons.LogOut size={20} />
             <span className="logout-text">Logout</span>
           </button>
         </div>
       </aside>
-
+      
       {showLogoutConfirm && (
         <div
           className="calendar-modal-overlay"
-          style={{ zIndex: 99999 }} 
+          style={{ zIndex: 99999 }}
           onClick={() => setShowLogoutConfirm(false)}
         >
           <div
@@ -149,8 +148,16 @@ export default function Sidebar({ activeTab, setActiveTab, handleLogout }) {
                 paddingBottom: "0",
               }}
             >
-              <h3 style={{ fontSize: "18px", fontWeight: "700" }}>
-                ⚠️ Confirm Logout
+              <h3
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "700",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <Icons.AlertTriangle color="#ffb547" size={24} /> Confirm Logout
               </h3>
             </div>
             <div className="modal-body" style={{ padding: "10px 0 20px 0" }}>
