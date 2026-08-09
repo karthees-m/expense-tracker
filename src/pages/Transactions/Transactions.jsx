@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { db } from "../../firebase";
 import { doc, deleteDoc, updateDoc } from "firebase/firestore";
+import * as Icons from "lucide-react";
 import "./Transactions.css";
+
+const renderIcon = (iconName, size = 16) => {
+  const IconCmp = Icons[iconName] || Icons.Tag;
+  return <IconCmp size={size} />;
+};
 
 const EditTransactionModal = ({ tx, onClose, onSave, categories }) => {
   const [title, setTitle] = useState(tx.title);
@@ -40,10 +46,9 @@ const EditTransactionModal = ({ tx, onClose, onSave, categories }) => {
             <p>Update your expense details below</p>
           </div>
           <button className="btn-close" onClick={onClose}>
-            ✕
+            <Icons.X size={20} />
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="tx-modal-form">
           <div className="amount-hero-box">
             <span className="currency-symbol">₹</span>
@@ -56,24 +61,34 @@ const EditTransactionModal = ({ tx, onClose, onSave, categories }) => {
               required
             />
           </div>
-
           <div className="segmented-control">
             <button
               type="button"
               className={`segment-btn ${expenseType === "Personal" ? "active" : ""}`}
               onClick={() => setExpenseType("Personal")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                justifyContent: "center",
+              }}
             >
-              👤 Personal
+              <Icons.User size={16} /> Personal
             </button>
             <button
               type="button"
               className={`segment-btn ${expenseType === "Friend" ? "active" : ""}`}
               onClick={() => setExpenseType("Friend")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                justifyContent: "center",
+              }}
             >
-              🤝 Friend
+              <Icons.Users size={16} /> Friend
             </button>
           </div>
-
           <div className="input-group">
             <label>Description / Title</label>
             <input
@@ -84,7 +99,6 @@ const EditTransactionModal = ({ tx, onClose, onSave, categories }) => {
               required
             />
           </div>
-
           {expenseType === "Friend" && (
             <div className="input-group slide-in">
               <label>Friend's Name</label>
@@ -97,7 +111,6 @@ const EditTransactionModal = ({ tx, onClose, onSave, categories }) => {
               />
             </div>
           )}
-
           {expenseType === "Personal" && (
             <div className="input-group">
               <label>Category</label>
@@ -108,13 +121,12 @@ const EditTransactionModal = ({ tx, onClose, onSave, categories }) => {
               >
                 {categories.map((c) => (
                   <option key={c.name} value={c.name}>
-                    {c.icon} {c.name}
+                    {c.name}
                   </option>
                 ))}
               </select>
             </div>
           )}
-
           <div className="two-cols">
             <div className="input-group">
               <label>Date</label>
@@ -133,20 +145,30 @@ const EditTransactionModal = ({ tx, onClose, onSave, categories }) => {
                 onChange={(e) => setPaymentMode(e.target.value)}
                 className="form-input form-select"
               >
-                <option value="UPI">📱 UPI / GPay</option>
-                <option value="Card">💳 Card</option>
-                <option value="Cash">💵 Cash</option>
-                <option value="NetBanking">🏦 Net Banking</option>
+                <option value="UPI">UPI / GPay</option>
+                <option value="Card">Card</option>
+                <option value="Cash">Cash</option>
+                <option value="NetBanking">Net Banking</option>
               </select>
             </div>
           </div>
-
           <div className="tx-modal-actions">
             <button type="button" className="btn-cancel" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="btn-submit" disabled={loading}>
-              {loading ? "Updating..." : "✓ Update Expense"}
+            <button
+              type="submit"
+              className="btn-submit"
+              disabled={loading}
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            >
+              {loading ? (
+                "Updating..."
+              ) : (
+                <>
+                  <Icons.Check size={18} /> Update
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -169,11 +191,9 @@ export default function Transactions({
   const [sortBy, setSortBy] = useState("date-desc");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [editingTx, setEditingTx] = useState(null);
 
-  // Custom Dropdown Open States
   const [openCatDropdown, setOpenCatDropdown] = useState(false);
   const [openTypeDropdown, setOpenTypeDropdown] = useState(false);
   const [openSortDropdown, setOpenSortDropdown] = useState(false);
@@ -182,7 +202,6 @@ export default function Transactions({
   const catRef = useRef(null);
   const typeRef = useRef(null);
   const sortRef = useRef(null);
-
   const rowRefs = useRef({});
 
   const todayDisplayDate = new Date().toLocaleDateString("en-US", {
@@ -194,18 +213,14 @@ export default function Transactions({
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target))
         setShowExportMenu(false);
-      }
-      if (catRef.current && !catRef.current.contains(event.target)) {
+      if (catRef.current && !catRef.current.contains(event.target))
         setOpenCatDropdown(false);
-      }
-      if (typeRef.current && !typeRef.current.contains(event.target)) {
+      if (typeRef.current && !typeRef.current.contains(event.target))
         setOpenTypeDropdown(false);
-      }
-      if (sortRef.current && !sortRef.current.contains(event.target)) {
+      if (sortRef.current && !sortRef.current.contains(event.target))
         setOpenSortDropdown(false);
-      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -240,7 +255,6 @@ export default function Transactions({
       let matchesDate = true;
       if (startDate) matchesDate = matchesDate && item.date >= startDate;
       if (endDate) matchesDate = matchesDate && item.date <= endDate;
-
       return matchesSearch && matchesCat && matchesType && matchesDate;
     })
     .sort((a, b) => {
@@ -267,59 +281,15 @@ export default function Transactions({
       await updateDoc(doc(db, "expenses", id), updatedData);
       setEditingTx(null);
     } catch (err) {
-      console.error("Error updating:", err);
       alert("Failed to update transaction.");
     }
   };
 
-  const exportToExcel = () => {
-    setShowExportMenu(false);
-    const headers = [
-      "Transaction ID",
-      "Title",
-      "Category",
-      "Type",
-      "Friend Name",
-      "Date",
-      "Payment Mode",
-      `Amount`,
-    ];
-    const rows = filtered.map((e) => [
-      `"${e.id}"`,
-      `"${e.title}"`,
-      `"${e.category}"`,
-      `"${e.category === "Lent to Friend" ? "Friend" : "Personal"}"`,
-      `"${e.friendName || "-"}"`,
-      `"${e.date}"`,
-      `"${e.paymentMode || "UPI"}"`,
-      e.amount,
-    ]);
-
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute(
-      "download",
-      `Expense_${new Date().toISOString().split("T")[0]}.csv`,
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const exportToPDF = () => {
-    setShowExportMenu(false);
-    window.print();
-  };
-
   const sortLabels = {
-    "date-desc": "📅 Date: Newest First",
-    "date-asc": "⏳ Date: Oldest First",
-    "amount-desc": "💰 Amount: High to Low",
-    "amount-asc": "💸 Amount: Low to High",
+    "date-desc": { label: "Newest First", icon: "CalendarDays" },
+    "date-asc": { label: "Oldest First", icon: "CalendarClock" },
+    "amount-desc": { label: "High to Low", icon: "ArrowDownUp" },
+    "amount-asc": { label: "Low to High", icon: "ArrowUpDown" },
   };
 
   return (
@@ -329,21 +299,34 @@ export default function Transactions({
           <h2>Transactions & Statement</h2>
           <p>Full audit trail of all recorded expenses</p>
         </div>
-
         <div className="top-nav-right">
           <div className="top-actions-row">
-            <div className="date-pill">📅 {todayDisplayDate}</div>
+            <div
+              className="date-pill"
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            >
+              <Icons.Calendar size={16} /> {todayDisplayDate}
+            </div>
             <div className="export-dropdown-container" ref={dropdownRef}>
               <button
                 className="btn-export-main"
                 onClick={() => setShowExportMenu(!showExportMenu)}
               >
-                📥 Export ▾
+                <Icons.Download size={18} /> Export{" "}
+                <Icons.ChevronDown size={14} />
               </button>
               {showExportMenu && (
                 <div className="export-dropdown-menu">
-                  <button onClick={exportToExcel}>📊 Download Excel</button>
-                  <button onClick={exportToPDF}>📄 Print / Save PDF</button>
+                  <button
+                    onClick={() => window.print()}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <Icons.FileText size={16} /> Print / Save PDF
+                  </button>
                 </div>
               )}
             </div>
@@ -351,13 +334,14 @@ export default function Transactions({
           <button
             className="btn-primary-add"
             onClick={() => setShowModal(true)}
+            style={{ display: "flex", alignItems: "center", gap: "6px" }}
           >
-            + Add Expense
+            <Icons.Plus size={18} /> Add Expense
           </button>
         </div>
       </div>
 
-      <div className="tx-summary-compact no-print">
+      <div className="tx-summary-compact">
         <div className="summary-box">
           <span>Total</span>
           <h3>
@@ -379,7 +363,6 @@ export default function Transactions({
 
       <div className="tx-filter-card no-print">
         <div className="filter-grid">
-          {/* Search Box */}
           <div className="filter-item search-grow">
             <label>Search Title / Friend</label>
             <input
@@ -396,12 +379,24 @@ export default function Transactions({
               className="custom-dropdown-trigger"
               onClick={() => setOpenCatDropdown(!openCatDropdown)}
             >
-              <span>
-                {selectedCategory === "All"
-                  ? "✨ All Categories"
-                  : `${categories.find((c) => c.name === selectedCategory)?.icon || "🏷️"} ${selectedCategory}`}
+              <span
+                className="truncate-text"
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                {selectedCategory === "All" ? (
+                  <>
+                    <Icons.List size={16} /> All Categories
+                  </>
+                ) : (
+                  <>
+                    {renderIcon(
+                      categories.find((c) => c.name === selectedCategory)?.icon,
+                    )}{" "}
+                    {selectedCategory}
+                  </>
+                )}
               </span>
-              <span className="dropdown-arrow">▾</span>
+              <Icons.ChevronDown size={14} className="dropdown-arrow" />
             </div>
             {openCatDropdown && (
               <div className="custom-dropdown-options">
@@ -411,8 +406,9 @@ export default function Transactions({
                     setSelectedCategory("All");
                     setOpenCatDropdown(false);
                   }}
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
-                  ✨ All Categories
+                  <Icons.List size={16} /> All Categories
                 </div>
                 {categories.map((c) => (
                   <div
@@ -423,7 +419,7 @@ export default function Transactions({
                       setOpenCatDropdown(false);
                     }}
                   >
-                    <span>{c.icon}</span> {c.name}
+                    {renderIcon(c.icon)} {c.name}
                   </div>
                 ))}
               </div>
@@ -436,14 +432,25 @@ export default function Transactions({
               className="custom-dropdown-trigger"
               onClick={() => setOpenTypeDropdown(!openTypeDropdown)}
             >
-              <span>
-                {selectedType === "All"
-                  ? "🌐 All Types"
-                  : selectedType === "Personal"
-                    ? "👤 Personal Only"
-                    : "🤝 Lent to Friends"}
+              <span
+                className="truncate-text"
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                {selectedType === "All" ? (
+                  <>
+                    <Icons.Layers size={16} /> All Types
+                  </>
+                ) : selectedType === "Personal" ? (
+                  <>
+                    <Icons.User size={16} /> Personal
+                  </>
+                ) : (
+                  <>
+                    <Icons.Users size={16} /> Friend
+                  </>
+                )}
               </span>
-              <span className="dropdown-arrow">▾</span>
+              <Icons.ChevronDown size={14} className="dropdown-arrow" />
             </div>
             {openTypeDropdown && (
               <div className="custom-dropdown-options">
@@ -453,8 +460,9 @@ export default function Transactions({
                     setSelectedType("All");
                     setOpenTypeDropdown(false);
                   }}
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
-                  🌐 All Types
+                  <Icons.Layers size={16} /> All Types
                 </div>
                 <div
                   className={`custom-dropdown-option ${selectedType === "Personal" ? "selected" : ""}`}
@@ -462,8 +470,9 @@ export default function Transactions({
                     setSelectedType("Personal");
                     setOpenTypeDropdown(false);
                   }}
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
-                  👤 Personal Only
+                  <Icons.User size={16} /> Personal Only
                 </div>
                 <div
                   className={`custom-dropdown-option ${selectedType === "Friend" ? "selected" : ""}`}
@@ -471,24 +480,27 @@ export default function Transactions({
                     setSelectedType("Friend");
                     setOpenTypeDropdown(false);
                   }}
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
-                  🤝 Lent to Friends
+                  <Icons.Users size={16} /> Lent to Friends
                 </div>
               </div>
             )}
           </div>
 
-          <div
-            className="filter-item custom-dropdown-wrapper highlight-filter"
-            ref={sortRef}
-          >
+          <div className="filter-item custom-dropdown-wrapper" ref={sortRef}>
             <label>Sort By</label>
             <div
               className="custom-dropdown-trigger"
               onClick={() => setOpenSortDropdown(!openSortDropdown)}
             >
-              <span>{sortLabels[sortBy]}</span>
-              <span className="dropdown-arrow">▾</span>
+              <span
+                className="truncate-text"
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                {renderIcon(sortLabels[sortBy].icon)} {sortLabels[sortBy].label}
+              </span>
+              <Icons.ChevronDown size={14} className="dropdown-arrow" />
             </div>
             {openSortDropdown && (
               <div className="custom-dropdown-options">
@@ -500,8 +512,13 @@ export default function Transactions({
                       setSortBy(key);
                       setOpenSortDropdown(false);
                     }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
                   >
-                    {sortLabels[key]}
+                    {renderIcon(sortLabels[key].icon)} {sortLabels[key].label}
                   </div>
                 ))}
               </div>
@@ -580,9 +597,7 @@ export default function Transactions({
           <tbody>
             {filtered.map((item) => {
               const catObj = categories.find((c) => c.name === item.category);
-              const emoji = catObj ? catObj.icon : "🏷️";
               const isHighlighted = item.id === selectedTxId;
-
               return (
                 <tr
                   key={item.id}
@@ -594,8 +609,15 @@ export default function Transactions({
                     <strong>{item.title}</strong>
                   </td>
                   <td className="col-cat">
-                    <span className="cat-tag">
-                      <span className="cat-emoji">{emoji}</span> {item.category}
+                    <span
+                      className="cat-tag"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      {renderIcon(catObj ? catObj.icon : "Tag")} {item.category}
                     </span>
                   </td>
                   <td className="col-pay">
@@ -603,18 +625,33 @@ export default function Transactions({
                   </td>
                   <td className="col-type">
                     {item.category === "Lent to Friend" ? (
-                      <span className="friend-badge">
-                        🤝 {item.friendName || "Friend"}
+                      <span
+                        className="friend-badge"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <Icons.Users size={14} /> {item.friendName || "Friend"}
                       </span>
                     ) : (
-                      <span className="personal-badge">👤 Personal</span>
+                      <span
+                        className="personal-badge"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <Icons.User size={14} /> Personal
+                      </span>
                     )}
                   </td>
                   <td className="col-amount amount-cell">
                     - {currency}
                     {item.amount.toFixed(2)}
                   </td>
-
                   <td className="col-action no-print">
                     <div className="action-btns">
                       <button
@@ -622,14 +659,14 @@ export default function Transactions({
                         onClick={() => setEditingTx(item)}
                         title="Edit Record"
                       >
-                        ✏️
+                        <Icons.Edit2 size={16} />
                       </button>
                       <button
                         className="btn-delete"
                         onClick={() => handleDelete(item.id)}
                         title="Delete Record"
                       >
-                        🗑️
+                        <Icons.Trash2 size={16} />
                       </button>
                     </div>
                   </td>
@@ -638,11 +675,6 @@ export default function Transactions({
             })}
           </tbody>
         </table>
-        {filtered.length === 0 && (
-          <div className="empty-tx-msg">
-            No transactions found matching your filters.
-          </div>
-        )}
       </div>
 
       <div className="print-footer only-print">
