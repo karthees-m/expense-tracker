@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { auth } from "../../firebase";
 import * as Icons from "lucide-react";
 import "./Sidebar.css";
 
-export default function Sidebar({ activeTab, setActiveTab, handleLogout }) {
-  const user = auth.currentUser;
-  const [collapsed, setCollapsed] = useState(false);
+export default function Sidebar({
+  activeTab,
+  setActiveTab,
+  handleLogout,
+  user,
+  userName,
+  collapsed,
+  setCollapsed,
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
@@ -99,36 +104,49 @@ export default function Sidebar({ activeTab, setActiveTab, handleLogout }) {
         </ul>
 
         <div className="sidebar-footer">
-          {user && (
-            <div className="user-profile-box">
-              {user.photoURL ? (
-                <img
-                  src={user.photoURL}
-                  alt="Profile"
-                  className="user-avatar"
-                />
-              ) : (
-                <div className="user-avatar-placeholder">
-                  <Icons.User size={20} />
-                </div>
-              )}
-              <div className="user-info">
-                <h4 className="user-name">{user.displayName || "User"}</h4>
-                <p className="user-email">{user.email || ""}</p>
+          {user ? (
+            <>
+              <div className="user-profile-box">
+                {user.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt="Profile"
+                    className="user-avatar"
+                  />
+                ) : (
+                  <div className="user-avatar-placeholder">
+                    <Icons.User size={20} />
+                  </div>
+                )}
+                {!collapsed && (
+                  <div className="user-info">
+                    <h4 className="user-name">{userName || "User"}</h4>
+                    <p className="user-email">{user.email || ""}</p>
+                  </div>
+                )}
               </div>
-            </div>
+              <button
+                className="sidebar-logout-btn"
+                onClick={() => setShowLogoutConfirm(true)}
+                title="Logout"
+              >
+                <Icons.LogOut size={20} />
+                {!collapsed && <span className="logout-text">Logout</span>}
+              </button>
+            </>
+          ) : (
+            <button
+              className="sidebar-login-btn"
+              onClick={() => setActiveTab("Login")}
+              title="Login"
+            >
+              <Icons.LogIn size={20} />
+              {!collapsed && <span className="login-text">Login</span>}
+            </button>
           )}
-          <button
-            className="sidebar-logout-btn"
-            onClick={() => setShowLogoutConfirm(true)}
-            title="Logout"
-          >
-            <Icons.LogOut size={20} />
-            <span className="logout-text">Logout</span>
-          </button>
         </div>
       </aside>
-      
+
       {showLogoutConfirm && (
         <div
           className="calendar-modal-overlay"
