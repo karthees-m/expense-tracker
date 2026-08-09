@@ -13,13 +13,11 @@ export default function LoginPage({
 }) {
   return (
     <div className="login-page">
-      {/* Background Bubble Elements */}
       <div className="bubble bubble-1"></div>
       <div className="bubble bubble-2"></div>
       <div className="bubble bubble-3"></div>
 
       <div className="login-card">
-        {/* LEFT SIDE: Brand & Auth Options */}
         <div className="login-form-side">
           <div className="login-form-inner">
             <div className="brand-header">
@@ -96,7 +94,6 @@ export default function LoginPage({
           </div>
         </div>
 
-        {/* RIGHT SIDE: Visual Guidance */}
         <div className="login-visual-side">
           <div className="visual-content">
             <div className="visual-header-row">
