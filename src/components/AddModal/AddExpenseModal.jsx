@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { db } from "../../firebase";
 import { collection, addDoc } from "firebase/firestore";
+import * as Icons from "lucide-react";
 import "./AddExpenseModal.css";
+
+const renderIcon = (iconName, size = 18) => {
+  const IconCmp = Icons[iconName] || Icons.Tag;
+  return <IconCmp size={size} />;
+};
 
 export default function AddExpenseModal({ closeModal, categories, user }) {
   const [title, setTitle] = useState("");
@@ -37,21 +43,18 @@ export default function AddExpenseModal({ closeModal, categories, user }) {
   }, []);
 
   const paymentOptions = [
-    { value: "UPI", label: "📱 UPI / GPay" },
-    { value: "Card", label: "💳 Credit / Debit Card" },
-    { value: "Cash", label: "💵 Cash" },
+    { value: "UPI", label: "UPI / GPay", icon: "Smartphone" },
+    { value: "Card", label: "Credit / Debit Card", icon: "CreditCard" },
+    { value: "Cash", label: "Cash", icon: "Banknote" },
   ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!user || !user.uid) {
       alert("Please login first to save expenses!");
       return;
     }
-
     if (!title.trim() || !amount) return;
-
     setLoading(true);
     try {
       await addDoc(collection(db, "expenses"), {
@@ -88,7 +91,7 @@ export default function AddExpenseModal({ closeModal, categories, user }) {
             <p>Record your spending details</p>
           </div>
           <button className="btn-close" onClick={closeModal} type="button">
-            ✕
+            <Icons.X size={20} />
           </button>
         </div>
 
@@ -112,14 +115,32 @@ export default function AddExpenseModal({ closeModal, categories, user }) {
               className={`segment-btn ${expenseType === "Expense" ? "active" : ""}`}
               onClick={() => setExpenseType("Expense")}
             >
-              Regular Expense
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  justifyContent: "center",
+                }}
+              >
+                <Icons.User size={16} /> Regular
+              </div>
             </button>
             <button
               type="button"
               className={`segment-btn ${expenseType === "Friend" ? "active" : ""}`}
               onClick={() => setExpenseType("Friend")}
             >
-              🤝 Lent to Friend
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  justifyContent: "center",
+                }}
+              >
+                <Icons.Users size={16} /> Lent to Friend
+              </div>
             </button>
           </div>
 
@@ -148,7 +169,6 @@ export default function AddExpenseModal({ closeModal, categories, user }) {
               />
             </div>
           ) : (
-
             <div
               className="input-group modal-custom-dropdown-wrapper"
               ref={catRef}
@@ -158,12 +178,17 @@ export default function AddExpenseModal({ closeModal, categories, user }) {
                 className="modal-custom-dropdown-trigger"
                 onClick={() => setOpenCatDropdown(!openCatDropdown)}
               >
-                <span>
+                <span
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
                   {selectedCategoryObj
-                    ? `${selectedCategoryObj.icon || "🏷️"} ${selectedCategoryObj.name}`
+                    ? renderIcon(selectedCategoryObj.icon)
+                    : renderIcon("Tag")}
+                  {selectedCategoryObj
+                    ? selectedCategoryObj.name
                     : "Select Category"}
                 </span>
-                <span className="modal-dropdown-arrow">▾</span>
+                <Icons.ChevronDown size={16} className="modal-dropdown-arrow" />
               </div>
               {openCatDropdown && (
                 <div className="modal-custom-dropdown-options">
@@ -176,7 +201,10 @@ export default function AddExpenseModal({ closeModal, categories, user }) {
                         setOpenCatDropdown(false);
                       }}
                     >
-                      <span>{cat.icon}</span> {cat.name}
+                      <span style={{ display: "flex", alignItems: "center" }}>
+                        {renderIcon(cat.icon)}
+                      </span>{" "}
+                      {cat.name}
                     </div>
                   ))}
                 </div>
@@ -195,7 +223,6 @@ export default function AddExpenseModal({ closeModal, categories, user }) {
                 required
               />
             </div>
-
             <div
               className="input-group modal-custom-dropdown-wrapper"
               ref={payRef}
@@ -205,12 +232,17 @@ export default function AddExpenseModal({ closeModal, categories, user }) {
                 className="modal-custom-dropdown-trigger"
                 onClick={() => setOpenPayDropdown(!openPayDropdown)}
               >
-                <span>
+                <span
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  {selectedPaymentObj
+                    ? renderIcon(selectedPaymentObj.icon)
+                    : renderIcon("Smartphone")}
                   {selectedPaymentObj
                     ? selectedPaymentObj.label
                     : "Select Mode"}
                 </span>
-                <span className="modal-dropdown-arrow">▾</span>
+                <Icons.ChevronDown size={16} className="modal-dropdown-arrow" />
               </div>
               {openPayDropdown && (
                 <div className="modal-custom-dropdown-options">
@@ -223,6 +255,9 @@ export default function AddExpenseModal({ closeModal, categories, user }) {
                         setOpenPayDropdown(false);
                       }}
                     >
+                      <span style={{ display: "flex", alignItems: "center" }}>
+                        {renderIcon(opt.icon)}
+                      </span>{" "}
                       {opt.label}
                     </div>
                   ))}
@@ -235,8 +270,24 @@ export default function AddExpenseModal({ closeModal, categories, user }) {
             <button type="button" className="btn-cancel" onClick={closeModal}>
               Cancel
             </button>
-            <button type="submit" className="btn-submit" disabled={loading}>
-              {loading ? "Saving..." : "✓ Save Expense"}
+            <button
+              type="submit"
+              className="btn-submit"
+              disabled={loading}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                justifyContent: "center",
+              }}
+            >
+              {loading ? (
+                "Saving..."
+              ) : (
+                <>
+                  <Icons.Check size={18} /> Save Expense
+                </>
+              )}
             </button>
           </div>
         </form>
