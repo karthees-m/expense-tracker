@@ -17,16 +17,17 @@ import Budgets from "./pages/Budgets/Budgets";
 import Settings from "./pages/Settings/Settings";
 import ExpenseCalendar from "./pages/Calendar/ExpenseCalendar";
 import AddExpenseModal from "./components/AddModal/AddExpenseModal";
+import LoginPage from "./components/LoginPage/LoginPage"; 
 import "./App.css";
 
 const DEFAULT_CATEGORIES = [
-  { id: "1", name: "Food & Dining", icon: "🍔", color: "#4318FF" },
-  { id: "2", name: "Transport", icon: "🚗", color: "#39B8FF" },
-  { id: "3", name: "Shopping", icon: "🛍️", color: "#05CD99" },
-  { id: "4", name: "Bills & Utilities", icon: "⚡", color: "#FFB547" },
-  { id: "5", name: "Entertainment", icon: "🍿", color: "#EE5D50" },
-  { id: "6", name: "Lent to Friend", icon: "🤝", color: "#868CFF" },
-  { id: "7", name: "Others", icon: "📦", color: "#A3AED0" },
+  { id: "1", name: "Food & Dining", icon: "Utensils", color: "#4318FF" },
+  { id: "2", name: "Transport", icon: "Car", color: "#39B8FF" },
+  { id: "3", name: "Shopping", icon: "ShoppingBag", color: "#05CD99" },
+  { id: "4", name: "Bills & Utilities", icon: "Zap", color: "#FFB547" },
+  { id: "5", name: "Entertainment", icon: "Film", color: "#EE5D50" },
+  { id: "6", name: "Lent to Friend", icon: "Users", color: "#868CFF" },
+  { id: "7", name: "Others", icon: "Box", color: "#A3AED0" },
 ];
 
 const DEFAULT_BUDGETS = {
@@ -46,7 +47,6 @@ export default function App() {
   const [showModal, setShowModal] = useState(false);
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
-
   const [selectedTxId, setSelectedTxId] = useState(null);
 
   const [userName, setUserName] = useState(
@@ -81,9 +81,7 @@ export default function App() {
           setUser(result.user);
           window.history.replaceState(null, "", window.location.pathname);
         })
-        .catch((error) => {
-          console.error("Error signing in with email link:", error);
-        });
+        .catch((error) => console.error("Error signing in:", error));
     }
   }, []);
 
@@ -92,6 +90,8 @@ export default function App() {
       setUser(currentUser);
       if (currentUser && currentUser.displayName) {
         setUserName(currentUser.displayName);
+      } else if (!currentUser) {
+        setExpenses([]); 
       }
       setLoadingAuth(false);
     });
@@ -104,7 +104,7 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !user.uid) {
       setExpenses([]);
       return;
     }
@@ -119,17 +119,17 @@ export default function App() {
           id: doc.id,
           ...doc.data(),
         }));
-
         data.sort((a, b) => {
           const timeA = a.createdAt?.seconds || 0;
           const timeB = b.createdAt?.seconds || 0;
           return timeB - timeA;
         });
-
         setExpenses(data);
       },
       (error) => {
-        console.error("Error fetching expenses: ", error);
+        if (error.code !== "permission-denied") {
+          console.error("Error fetching expenses: ", error);
+        }
       },
     );
     return () => unsubscribe();
@@ -137,26 +137,32 @@ export default function App() {
 
   useEffect(() => {
     const qCat = query(collection(db, "custom_categories"));
-    const unsubscribeCat = onSnapshot(qCat, (snapshot) => {
-      const customCats = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      let combined = [...DEFAULT_CATEGORIES];
-      customCats.forEach((c) => {
-        const existingIdx = combined.findIndex(
-          (item) =>
-            item.id === c.id ||
-            item.name.toLowerCase() === c.name.toLowerCase(),
-        );
-        if (existingIdx >= 0) {
-          combined[existingIdx] = { ...combined[existingIdx], ...c };
-        } else {
-          combined.push(c);
-        }
-      });
-      setCategories(combined);
-    });
+    const unsubscribeCat = onSnapshot(
+      qCat,
+      (snapshot) => {
+        const customCats = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        let combined = [...DEFAULT_CATEGORIES];
+        customCats.forEach((c) => {
+          const existingIdx = combined.findIndex(
+            (item) =>
+              item.id === c.id ||
+              item.name.toLowerCase() === c.name.toLowerCase(),
+          );
+          if (existingIdx >= 0) {
+            combined[existingIdx] = { ...combined[existingIdx], ...c };
+          } else {
+            combined.push(c);
+          }
+        });
+        setCategories(combined);
+      },
+      (err) => {
+        if (err.code !== "permission-denied") console.error(err);
+      },
+    );
     return () => unsubscribeCat();
   }, []);
 
@@ -165,7 +171,6 @@ export default function App() {
       await signInWithPopup(auth, googleProvider);
     } catch (err) {
       console.error("Login failed:", err);
-      alert("Google Login failed. Please try again.");
     }
   };
 
@@ -180,13 +185,13 @@ export default function App() {
       window.localStorage.setItem("emailForSignIn", email);
       setEmailSent(true);
     } catch (err) {
-      console.error(err);
       alert("Error sending email: " + err.message);
     }
   };
 
   const handleLogout = async () => {
     try {
+      setExpenses([]); 
       await signOut(auth);
     } catch (err) {
       console.error("Logout failed:", err);
@@ -212,241 +217,16 @@ export default function App() {
 
   if (!user) {
     return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100vh",
-          background: "#0b0f19",
-          color: "#f8fafc",
-          fontFamily: "inherit",
-        }}
-      >
-        <div
-          style={{
-            background: "#111827",
-            padding: "40px 32px",
-            borderRadius: "24px",
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-            border: "1px solid #1f2937",
-            textAlign: "center",
-            maxWidth: "420px",
-            width: "90%",
-          }}
-        >
-          {emailSent ? (
-            <div>
-              <h2 style={{ color: "#fff", marginBottom: "10px" }}>
-                Check your email! 📧
-              </h2>
-              <p
-                style={{
-                  color: "#9ca3af",
-                  marginBottom: "20px",
-                  fontSize: "0.9rem",
-                }}
-              >
-                We've sent a sign-in link to <strong>{email}</strong>.
-              </p>
-              <button
-                onClick={() => setEmailSent(false)}
-                style={{
-                  background: "transparent",
-                  color: "#39b8ff",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "0.9rem",
-                  fontWeight: "600",
-                }}
-              >
-                Back to Login
-              </button>
-            </div>
-          ) : showEmailInput ? (
-            <form
-              onSubmit={handleEmailLogin}
-              style={{ display: "flex", flexDirection: "column", gap: "14px" }}
-            >
-              <h2
-                style={{
-                  color: "#fff",
-                  marginBottom: "8px",
-                  fontSize: "1.5rem",
-                  fontWeight: "800",
-                }}
-              >
-                Enter your email
-              </h2>
-              <p
-                style={{
-                  color: "#9ca3af",
-                  fontSize: "0.85rem",
-                  marginBottom: "10px",
-                }}
-              >
-                We'll send a secure sign-in link to your inbox.
-              </p>
-              <input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                style={{
-                  background: "#0b0f19",
-                  border: "1px solid #374151",
-                  padding: "14px 16px",
-                  borderRadius: "12px",
-                  color: "#ffffff",
-                  fontSize: "0.95rem",
-                  outline: "none",
-                  width: "100%",
-                }}
-              />
-              <button
-                type="submit"
-                style={{
-                  background: "#ffffff",
-                  color: "#111827",
-                  border: "none",
-                  padding: "14px 20px",
-                  borderRadius: "12px",
-                  fontSize: "0.95rem",
-                  fontWeight: "700",
-                  cursor: "pointer",
-                  width: "100%",
-                  transition: "background 0.2s",
-                }}
-              >
-                Send Sign-In Link
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowEmailInput(false)}
-                style={{
-                  background: "transparent",
-                  color: "#6b7280",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "0.85rem",
-                  marginTop: "5px",
-                }}
-              >
-                Back to options
-              </button>
-            </form>
-          ) : (
-            <div>
-              <h2
-                style={{
-                  fontSize: "1.75rem",
-                  fontWeight: "800",
-                  marginBottom: "8px",
-                  color: "#ffffff",
-                }}
-              >
-                ExpenseTracker
-              </h2>
-              <p
-                style={{
-                  color: "#9ca3af",
-                  marginBottom: "28px",
-                  fontSize: "0.9rem",
-                }}
-              >
-                Manage your personal finances securely.
-              </p>
-
-              <button
-                onClick={handleGoogleLogin}
-                style={{
-                  background: "#1f2937",
-                  color: "#ffffff",
-                  border: "1px solid #374151",
-                  padding: "14px 20px",
-                  borderRadius: "12px",
-                  fontSize: "0.95rem",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "12px",
-                  transition: "background 0.2s",
-                }}
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 48 48"
-                >
-                  <path
-                    fill="#EA4335"
-                    d="M24 9.5c3.54 0 6.7 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
-                  />
-                  <path
-                    fill="#4285F4"
-                    d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
-                  />
-                </svg>
-                Continue with Google
-              </button>
-
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  margin: "20px 0",
-                  color: "#6b7280",
-                  fontSize: "0.8rem",
-                  fontWeight: "600",
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                }}
-              >
-                <span
-                  style={{ flex: 1, height: "1px", background: "#1f2937" }}
-                ></span>
-                <span style={{ padding: "0 12px" }}>OR</span>
-                <span
-                  style={{ flex: 1, height: "1px", background: "#1f2937" }}
-                ></span>
-              </div>
-
-              <button
-                onClick={() => setShowEmailInput(true)}
-                style={{
-                  background: "#ffffff",
-                  color: "#111827",
-                  border: "none",
-                  padding: "14px 20px",
-                  borderRadius: "12px",
-                  fontSize: "0.95rem",
-                  fontWeight: "700",
-                  cursor: "pointer",
-                  width: "100%",
-                  transition: "background 0.2s",
-                }}
-              >
-                Continue with email
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+      <LoginPage
+        handleGoogleLogin={handleGoogleLogin}
+        handleEmailLogin={handleEmailLogin}
+        email={email}
+        setEmail={setEmail}
+        emailSent={emailSent}
+        setEmailSent={setEmailSent}
+        showEmailInput={showEmailInput}
+        setShowEmailInput={setShowEmailInput}
+      />
     );
   }
 
@@ -537,12 +317,10 @@ export default function App() {
         setActiveTab={setActiveTab}
         handleLogout={handleLogout}
       />
-
       <main className="main-content">
         <div className="blue-backdrop"></div>
         {renderActivePage()}
       </main>
-
       {showModal && (
         <AddExpenseModal
           closeModal={() => setShowModal(false)}
