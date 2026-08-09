@@ -283,3 +283,26 @@
     display: block !important;
   }
 }
+.sidebar-login-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #4318ff;
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: 600;
+  transition: 0.2s;
+  justify-content: center;
+}
+
+.sidebar-login-btn:hover {
+  background: #3614cc;
+}
+
+.sidebar.collapsed .sidebar-login-btn {
+  padding: 12px 0;
+}
