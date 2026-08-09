@@ -48,6 +48,7 @@ export default function Dashboard({
   setActiveTab,
   categories,
   monthlyIncome = 50000,
+  user,
 }) {
   const [timeRangeOverview, setTimeRangeOverview] = useState("30D");
   const [showOverviewDropdown, setShowOverviewDropdown] = useState(false);
@@ -136,7 +137,13 @@ export default function Dashboard({
         <div className="app-header-right">
           <button
             className="btn-primary-add"
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              if (!user) {
+                setActiveTab("Login");
+              } else {
+                setShowModal(true);
+              }
+            }}
           >
             <Icons.Plus size={20} /> Add Expense
           </button>
