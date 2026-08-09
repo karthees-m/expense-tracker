@@ -1,7 +1,8 @@
 .sidebar {
-  width: 260px;
+  width: 280px;
   background: var(--bg-card);
-  border-right: 1px solid var(--border-light);
+  border-right: none;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.02);
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -18,21 +19,19 @@
 }
 
 .sidebar-header {
-  padding: 20px 16px;
+  padding: 24px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-light);
-  min-height: 76px;
 }
 
 .sidebar.collapsed .sidebar-header {
   justify-content: center;
-  padding: 20px 10px;
+  padding: 24px 10px;
 }
 
 .sidebar-title {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   font-weight: 800;
   color: var(--text-dark);
   white-space: nowrap;
@@ -45,29 +44,28 @@
 }
 
 .menu-toggle-btn {
-  background: var(--bg-canvas);
-  border: 1px solid var(--border-light);
-  color: var(--text-dark);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  font-size: 1.1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  transition: 0.2s;
   flex-shrink: 0;
 }
 
 .menu-toggle-btn:hover {
-  background: var(--border-light);
+  background: var(--bg-canvas);
+  color: var(--primary-blue);
 }
 
 .desktop-toggle {
   display: flex;
 }
-
 .mobile-close-btn {
   display: none;
 }
@@ -79,14 +77,13 @@
   left: 16px;
   z-index: 1100;
   background: var(--bg-card);
-  border: 1px solid var(--border-light);
+  border: none;
   color: var(--text-dark);
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
-  font-size: 1.3rem;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   align-items: center;
   justify-content: center;
 }
@@ -95,14 +92,14 @@
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(11, 25, 60, 0.5);
-  backdrop-filter: blur(4px);
+  background: rgba(11, 25, 60, 0.4);
+  backdrop-filter: blur(2px);
   z-index: 999;
 }
 
 .sidebar-menu {
   list-style: none;
-  padding: 16px 12px;
+  padding: 10px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -113,11 +110,10 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border-radius: 12px;
   font-weight: 600;
-  color: var(--text-dark);
-  opacity: 0.85;
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -125,7 +121,7 @@
 
 .sidebar.collapsed .sidebar-item {
   justify-content: center;
-  padding: 12px;
+  padding: 14px;
 }
 
 .sidebar.collapsed .item-text {
@@ -134,20 +130,16 @@
 
 .sidebar-item:hover {
   background: var(--bg-canvas);
-  opacity: 1;
   color: var(--primary-blue);
 }
 
 .sidebar-item.active {
   background: var(--primary-blue);
   color: #ffffff !important;
-  opacity: 1;
-  box-shadow: 0 4px 14px rgba(20, 71, 230, 0.3);
+  box-shadow: 0 4px 14px rgba(67, 24, 255, 0.25);
 }
 
 .item-icon {
-  font-size: 1.2rem;
-  min-width: 24px;
   display: flex;
   justify-content: center;
 }
@@ -157,17 +149,15 @@
 }
 
 .sidebar-footer {
-  padding: 14px;
-  border-top: 1px solid var(--border-light);
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background: var(--bg-canvas);
+  gap: 16px;
 }
 
 .sidebar.collapsed .sidebar-footer {
   align-items: center;
-  padding: 14px 6px;
+  padding: 20px 10px;
 }
 
 .sidebar.collapsed .user-info,
@@ -178,28 +168,30 @@
 .user-profile-box {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   overflow: hidden;
+  padding: 10px;
+  background: var(--bg-canvas);
+  border-radius: 14px;
 }
 
 .user-avatar {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--primary-blue);
   flex-shrink: 0;
 }
 
 .user-avatar-placeholder {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: var(--border-light);
+  background: var(--primary-blue);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
   flex-shrink: 0;
 }
 
@@ -210,7 +202,7 @@
 }
 
 .user-name {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--text-dark);
   white-space: nowrap;
@@ -219,7 +211,7 @@
 }
 
 .user-email {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -227,24 +219,30 @@
 }
 
 .sidebar-logout-btn {
-  background: rgba(238, 93, 80, 0.1);
-  color: var(--red, #ee5d50);
+  background: transparent;
+  color: var(--text-muted);
   border: none;
-  padding: 10px;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 0.85rem;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: 0.2s;
   width: 100%;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+}
+
+.sidebar.collapsed .sidebar-logout-btn {
   justify-content: center;
-  gap: 8px;
+  padding: 12px 0;
 }
 
 .sidebar-logout-btn:hover {
-  background: rgba(238, 93, 80, 0.2);
+  background: rgba(238, 93, 80, 0.1);
+  color: var(--red);
 }
 
 @media (max-width: 768px) {
@@ -254,19 +252,24 @@
   .sidebar-overlay {
     display: block;
   }
+
   .sidebar {
     position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
     width: 280px;
+    height: 100%;
+    flex-direction: column;
     transform: translateX(-100%);
-    box-shadow: 15px 0 40px rgba(0, 0, 0, 0.25);
+    box-shadow: 15px 0 40px rgba(0, 0, 0, 0.15);
     z-index: 1001;
   }
+
   .sidebar.mobile-open {
     transform: translateX(0);
   }
+
   .desktop-toggle {
     display: none !important;
   }
@@ -278,13 +281,5 @@
   .user-info,
   .logout-text {
     display: block !important;
-  }
-  .sidebar-footer {
-    align-items: stretch;
-    padding: 14px;
-  }
-  .sidebar-item {
-    justify-content: flex-start;
-    padding: 12px 14px;
   }
 }
