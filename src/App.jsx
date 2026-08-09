@@ -14,10 +14,10 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import Transactions from "./pages/Transactions/Transactions";
 import Categories from "./pages/Categories/Categories";
 import Budgets from "./pages/Budgets/Budgets";
-import Settings from "./pages/Settings/Settings";
 import ExpenseCalendar from "./pages/Calendar/ExpenseCalendar";
+import Settings from "./pages/Settings/Settings";
 import AddExpenseModal from "./components/AddModal/AddExpenseModal";
-import LoginPage from "./components/LoginPage/LoginPage"; 
+import LoginPage from "./components/LoginPage/LoginPage";
 import "./App.css";
 
 const DEFAULT_CATEGORIES = [
@@ -48,6 +48,7 @@ export default function App() {
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [selectedTxId, setSelectedTxId] = useState(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const [userName, setUserName] = useState(
     () => localStorage.getItem("et_userName") || "User",
@@ -79,6 +80,7 @@ export default function App() {
         .then((result) => {
           window.localStorage.removeItem("emailForSignIn");
           setUser(result.user);
+          setActiveTab("Dashboard");
           window.history.replaceState(null, "", window.location.pathname);
         })
         .catch((error) => console.error("Error signing in:", error));
@@ -88,10 +90,8 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser && currentUser.displayName) {
-        setUserName(currentUser.displayName);
-      } else if (!currentUser) {
-        setExpenses([]); 
+      if (!currentUser) {
+        setExpenses([]);
       }
       setLoadingAuth(false);
     });
@@ -169,6 +169,7 @@ export default function App() {
   const handleGoogleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
+      setActiveTab("Dashboard");
     } catch (err) {
       console.error("Login failed:", err);
     }
@@ -191,8 +192,9 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
-      setExpenses([]); 
+      setExpenses([]);
       await signOut(auth);
+      setActiveTab("Dashboard");
     } catch (err) {
       console.error("Logout failed:", err);
     }
@@ -215,7 +217,7 @@ export default function App() {
     );
   }
 
-  if (!user) {
+  if (activeTab === "Login") {
     return (
       <LoginPage
         handleGoogleLogin={handleGoogleLogin}
@@ -238,10 +240,11 @@ export default function App() {
             expenses={expenses}
             setShowModal={setShowModal}
             currency="₹"
-            userName={userName}
+            userName={user ? userName : "User"}
             setActiveTab={setActiveTab}
             categories={categories}
-            monthlyIncome={monthlyIncome}
+            monthlyIncome={user ? monthlyIncome : ""}
+            user={user}
           />
         );
       case "Transactions":
@@ -286,14 +289,15 @@ export default function App() {
       case "Settings":
         return (
           <Settings
-            userName={userName}
+            userName={user ? userName : "User"}
             setUserName={setUserName}
             theme={theme}
             setTheme={setTheme}
-            monthlyIncome={monthlyIncome}
+            monthlyIncome={user ? monthlyIncome : ""}
             setMonthlyIncome={setMonthlyIncome}
             expenses={expenses}
             handleLogout={handleLogout}
+            user={user}
           />
         );
       default:
@@ -302,22 +306,33 @@ export default function App() {
             expenses={expenses}
             setShowModal={setShowModal}
             currency="₹"
-            userName={userName}
+            userName={user ? userName : "User"}
             setActiveTab={setActiveTab}
             categories={categories}
+            user={user}
           />
         );
     }
   };
 
   return (
-    <div className="app-container">
+    <div
+      className={`app-container ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}
+    >
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         handleLogout={handleLogout}
+        user={user}
+        userName={user ? userName : "User"}
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
       />
       <main className="main-content">
+        <div className="page-bubbles">
+          <div className="page-bubble bubble-1"></div>
+          <div className="page-bubble bubble-2"></div>
+        </div>
         <div className="blue-backdrop"></div>
         {renderActivePage()}
       </main>
