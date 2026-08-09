@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import * as Icons from "lucide-react";
 import "./ExpenseCalendar.css";
 
 export default function ExpenseCalendar({
@@ -16,7 +17,6 @@ export default function ExpenseCalendar({
 
   const firstDayIndex = new Date(year, month, 1).getDay();
   const totalDays = new Date(year, month + 1, 0).getDate();
-
   const monthNames = [
     "January",
     "February",
@@ -32,11 +32,8 @@ export default function ExpenseCalendar({
     "December",
   ];
 
-  const formatDateString = (y, m, d) => {
-    const mm = String(m + 1).padStart(2, "0");
-    const dd = String(d).padStart(2, "0");
-    return `${y}-${mm}-${dd}`;
-  };
+  const formatDateString = (y, m, d) =>
+    `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
   const getDayExpense = (day) => {
     const dateStr = formatDateString(year, month, day);
@@ -50,18 +47,8 @@ export default function ExpenseCalendar({
     const filtered = transactions.filter(
       (t) => t.date === dateStr || t.date?.startsWith(dateStr),
     );
-
     setSelectedDate(dateStr);
     setDayTransactions(filtered);
-  };
-
-  const handleTransactionClick = (txId) => {
-    if (setSelectedTxId) {
-      setSelectedTxId(txId);
-    }
-    if (setActiveTab) {
-      setActiveTab("Transactions");
-    }
   };
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
@@ -77,20 +64,26 @@ export default function ExpenseCalendar({
       </div>
 
       <div className="calendar-card">
-        {/* Calendar Header */}
         <div className="calendar-header">
-          <button className="cal-nav-btn" onClick={prevMonth}>
-            &lt; Prev
+          <button
+            className="cal-nav-btn"
+            onClick={prevMonth}
+            style={{ display: "flex", alignItems: "center", gap: "4px" }}
+          >
+            <Icons.ChevronLeft size={16} /> Prev
           </button>
           <h3>
             {monthNames[month]} {year}
           </h3>
-          <button className="cal-nav-btn" onClick={nextMonth}>
-            Next &gt;
+          <button
+            className="cal-nav-btn"
+            onClick={nextMonth}
+            style={{ display: "flex", alignItems: "center", gap: "4px" }}
+          >
+            Next <Icons.ChevronRight size={16} />
           </button>
         </div>
 
-        {/* Week Days */}
         <div className="calendar-weekdays">
           <div>Sun</div>
           <div>Mon</div>
@@ -101,12 +94,10 @@ export default function ExpenseCalendar({
           <div>Sat</div>
         </div>
 
-        {/* Days Grid */}
         <div className="calendar-grid">
           {Array.from({ length: firstDayIndex }).map((_, index) => (
             <div key={`empty-${index}`} className="calendar-day empty"></div>
           ))}
-
           {Array.from({ length: totalDays }).map((_, index) => {
             const day = index + 1;
             const expense = getDayExpense(day);
@@ -114,13 +105,10 @@ export default function ExpenseCalendar({
               day === new Date().getDate() &&
               month === new Date().getMonth() &&
               year === new Date().getFullYear();
-
             return (
               <div
                 key={day}
-                className={`calendar-day ${isToday ? "today" : ""} ${
-                  expense > 0 ? "has-expense" : ""
-                }`}
+                className={`calendar-day ${isToday ? "today" : ""} ${expense > 0 ? "has-expense" : ""}`}
                 onClick={() => handleDayClick(day)}
                 style={{ cursor: "pointer" }}
               >
@@ -154,10 +142,9 @@ export default function ExpenseCalendar({
                 className="close-modal-btn"
                 onClick={() => setSelectedDate(null)}
               >
-                ✕
+                <Icons.X size={20} />
               </button>
             </div>
-
             <div className="modal-body">
               {dayTransactions.length > 0 ? (
                 <div className="day-tx-list">
@@ -165,19 +152,18 @@ export default function ExpenseCalendar({
                     <div
                       key={tx.id || idx}
                       className="day-tx-item"
-                      onClick={() => handleTransactionClick(tx.id)}
-                      style={{
-                        cursor: "pointer",
-                        transition: "background 0.2s",
+                      onClick={() => {
+                        setSelectedTxId(tx.id);
+                        setActiveTab("Transactions");
                       }}
-                      title="Click to view and highlight in Transactions"
+                      style={{ cursor: "pointer" }}
                     >
                       <div className="tx-info-left">
                         <span className="tx-cat">
                           {tx.category || "General"}
                         </span>
                         <span className="tx-desc">
-                          {tx.description || tx.title || "No description"}
+                          {tx.title || "No description"}
                         </span>
                       </div>
                       <div className="tx-info-right">
@@ -192,16 +178,25 @@ export default function ExpenseCalendar({
                           {Number(tx.amount).toLocaleString()}
                         </span>
                         <span className="tx-payment">
-                          {tx.paymentMethod || "UPI"}
+                          {tx.paymentMode || "UPI"}
                         </span>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="no-tx-text">
-                  No expenses recorded on this date. 🎉
-                </p>
+                <div
+                  className="no-tx-text"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "10px",
+                  }}
+                >
+                  <Icons.Smile size={32} color="#94a3b8" />
+                  <p>No expenses recorded on this date.</p>
+                </div>
               )}
             </div>
           </div>
