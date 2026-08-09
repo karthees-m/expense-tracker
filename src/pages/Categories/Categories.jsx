@@ -1,31 +1,50 @@
 import React, { useState } from "react";
 import { db } from "../../firebase";
 import { collection, doc, setDoc, deleteDoc } from "firebase/firestore";
+import * as Icons from "lucide-react";
 import "./Categories.css";
 
+const renderIcon = (iconName, size = 20) => {
+  const IconCmp = Icons[iconName] || Icons.Tag;
+  return <IconCmp size={size} />;
+};
+
 export default function Categories({ expenses, currency, categories }) {
-  const [modalType, setModalType] = useState(null); // "add" or "edit" or null
+  const [modalType, setModalType] = useState(null);
   const [activeCatId, setActiveCatId] = useState(null);
 
   const [catName, setCatName] = useState("");
-  const [catEmoji, setCatEmoji] = useState("🏷️");
+  const [catIcon, setCatIcon] = useState("Tag");
   const [catColor, setCatColor] = useState("#4318FF");
   const [saving, setSaving] = useState(false);
 
-  const popularEmojis = [
-    "🍕",
-    "🎮",
-    "✈️",
-    "💊",
-    "📚",
-    "🏋️",
-    "💻",
-    "☕",
-    "🎁",
-    "🐶",
-    "👗",
-    "🚗",
+  const popularIcons = [
+    "Utensils",
+    "Gamepad2",
+    "Plane",
+    "Pill",
+    "BookOpen",
+    "Dumbbell",
+    "Laptop",
+    "Coffee",
+    "Gift",
+    "Dog",
+    "Shirt",
+    "Car",
+    "ShoppingBag",
+    "Zap",
+    "Film",
+    "Users",
+    "Box",
+    "Home",
+    "Music",
+    "Smartphone",
+    "Heart",
+    "Camera",
+    "Briefcase",
+    "Scissors",
   ];
+
   const popularColors = [
     "#4318FF",
     "#39B8FF",
@@ -36,40 +55,36 @@ export default function Categories({ expenses, currency, categories }) {
     "#E02424",
     "#0E9F6E",
   ];
-
   const totalAll = expenses.reduce((a, b) => a + b.amount, 0);
 
   const openCreateModal = () => {
     setActiveCatId(null);
     setCatName("");
-    setCatEmoji("🏷️");
+    setCatIcon("Tag");
     setCatColor("#4318FF");
     setModalType("add");
   };
 
   const openEditModal = (cat) => {
-    setActiveCatId(cat.id || cat.name); 
+    setActiveCatId(cat.id || cat.name);
     setCatName(cat.name);
-    setCatEmoji(cat.icon);
+    setCatIcon(cat.icon || "Tag");
     setCatColor(cat.color);
     setModalType("edit");
   };
 
-  const closeModal = () => {
-    setModalType(null);
-  };
+  const closeModal = () => setModalType(null);
 
   const handleSaveCategory = async (e) => {
     e.preventDefault();
     if (!catName.trim()) return;
-
     setSaving(true);
     try {
       if (modalType === "add") {
         const newCatRef = doc(collection(db, "custom_categories"));
         await setDoc(newCatRef, {
           name: catName.trim(),
-          icon: catEmoji || "🏷️",
+          icon: catIcon || "Tag",
           color: catColor || "#4318FF",
           createdAt: new Date(),
         });
@@ -78,7 +93,7 @@ export default function Categories({ expenses, currency, categories }) {
           doc(db, "custom_categories", String(activeCatId)),
           {
             name: catName.trim(),
-            icon: catEmoji,
+            icon: catIcon,
             color: catColor,
             updatedAt: new Date(),
           },
@@ -87,7 +102,6 @@ export default function Categories({ expenses, currency, categories }) {
       }
       closeModal();
     } catch (err) {
-      console.error("Error saving category:", err);
       alert("Failed to save category. Please try again.");
     } finally {
       setSaving(false);
@@ -115,8 +129,12 @@ export default function Categories({ expenses, currency, categories }) {
           <h2>Categories Directory</h2>
           <p>Organize, create and track spending across all verticals</p>
         </div>
-        <button className="btn-primary-add" onClick={openCreateModal}>
-          + Create Category
+        <button
+          className="btn-primary-add"
+          onClick={openCreateModal}
+          style={{ display: "flex", alignItems: "center", gap: "6px" }}
+        >
+          <Icons.Plus size={18} /> Create Category
         </button>
       </div>
 
@@ -137,33 +155,29 @@ export default function Categories({ expenses, currency, categories }) {
                     className="cat-badge"
                     style={{ background: `${cat.color}15`, color: cat.color }}
                   >
-                    {cat.icon}
+                    {renderIcon(cat.icon, 24)}
                   </div>
                   <span className="cat-share-badge">{share}%</span>
                 </div>
-
-                {/* 🆕 EDIT & DELETE BUTTONS FOR ALL CATEGORIES */}
                 <div className="cat-action-btns">
                   <button
                     className="btn-edit-cat"
                     onClick={() => openEditModal(cat)}
                     title="Edit Category"
                   >
-                    ✏️
+                    <Icons.Edit2 size={16} />
                   </button>
                   <button
                     className="btn-delete-cat"
                     onClick={() => handleDelete(cat)}
                     title="Delete / Reset"
                   >
-                    🗑️
+                    <Icons.Trash2 size={16} />
                   </button>
                 </div>
               </div>
-
               <h3 className="cat-title">{cat.name}</h3>
               <p className="cat-count">{count} Transactions recorded</p>
-
               <div className="cat-footer">
                 <span>Total Spent</span>
                 <h4>
@@ -186,10 +200,10 @@ export default function Categories({ expenses, currency, categories }) {
                     ? "Create Custom Category"
                     : "Edit Category"}
                 </h3>
-                <p>Pick an emoji avatar and theme color</p>
+                <p>Pick an icon and theme color</p>
               </div>
               <button className="btn-close-cat" onClick={closeModal}>
-                ✕
+                <Icons.X size={20} />
               </button>
             </div>
 
@@ -197,31 +211,34 @@ export default function Categories({ expenses, currency, categories }) {
               <div className="emoji-preview-center">
                 <div
                   className="emoji-avatar-bubble"
-                  style={{ background: `${catColor}20`, borderColor: catColor }}
+                  style={{
+                    background: `${catColor}20`,
+                    borderColor: catColor,
+                    color: catColor,
+                  }}
                 >
-                  {catEmoji}
+                  {renderIcon(catIcon, 32)}
                 </div>
-                <input
-                  type="text"
-                  maxLength="2"
-                  value={catEmoji}
-                  onChange={(e) => setCatEmoji(e.target.value)}
-                  className="emoji-direct-input"
-                  title="Type custom emoji"
-                />
               </div>
 
               <div className="picker-section">
-                <label>Quick Emoji Picks</label>
-                <div className="emoji-choices-row">
-                  {popularEmojis.map((emoji) => (
+                <label>Select Icon</label>
+                <div
+                  className="emoji-choices-row"
+                  style={{
+                    maxHeight: "140px",
+                    overflowY: "auto",
+                    padding: "4px",
+                  }}
+                >
+                  {popularIcons.map((iconName) => (
                     <button
                       type="button"
-                      key={emoji}
-                      className={`emoji-pick-btn ${catEmoji === emoji ? "selected" : ""}`}
-                      onClick={() => setCatEmoji(emoji)}
+                      key={iconName}
+                      className={`emoji-pick-btn ${catIcon === iconName ? "selected" : ""}`}
+                      onClick={() => setCatIcon(iconName)}
                     >
-                      {emoji}
+                      {renderIcon(iconName, 20)}
                     </button>
                   ))}
                 </div>
@@ -240,7 +257,7 @@ export default function Categories({ expenses, currency, categories }) {
               </div>
 
               <div className="picker-section">
-                <label>Theme Color & Custom Picker</label>
+                <label>Theme Color</label>
                 <div className="color-choices-row">
                   {popularColors.map((color) => (
                     <button
@@ -251,7 +268,6 @@ export default function Categories({ expenses, currency, categories }) {
                       onClick={() => setCatColor(color)}
                     />
                   ))}
-
                   <div className="custom-color-wrap" title="Pick Custom Color">
                     <input
                       type="color"
@@ -271,8 +287,24 @@ export default function Categories({ expenses, currency, categories }) {
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn-submit" disabled={saving}>
-                  {saving ? "Saving..." : "✓ Save Category"}
+                <button
+                  type="submit"
+                  className="btn-submit"
+                  disabled={saving}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    justifyContent: "center",
+                  }}
+                >
+                  {saving ? (
+                    "Saving..."
+                  ) : (
+                    <>
+                      <Icons.Check size={18} /> Save Category
+                    </>
+                  )}
                 </button>
               </div>
             </form>
